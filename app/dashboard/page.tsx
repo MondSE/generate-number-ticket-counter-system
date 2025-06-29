@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-function formatDate(date: Date) {
-  const year = new Date().getFullYear();
-  const month = String(new Date().getMonth() + 1).padStart(2, "0");
-  const day = String(new Date().getDate()).padStart(2, "0");
+function formatDate() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
   return `${year}${month}${day}`;
 }
 
@@ -24,24 +25,8 @@ export default function CounterQueuePage() {
   const [globalCounter, setGlobalCounter] = useState(1);
   const [waitingQueue, setWaitingQueue] = useState<string[]>([]);
 
-  const tryAssignFromQueue = () => {
-    const updatedCounters = [...counterList];
-    const newQueue = [...waitingQueue];
-
-    updatedCounters.forEach((counter) => {
-      if (!counter.occupied && newQueue.length > 0) {
-        const nextClient = newQueue.shift()!;
-        counter.occupied = true;
-        counter.clientNumber = nextClient;
-      }
-    });
-
-    setCounterList(updatedCounters);
-    setWaitingQueue(newQueue);
-  };
-
   const handleGenerate = () => {
-    const date = formatDate(new Date());
+    const date = formatDate();
     const number = String(globalCounter).padStart(4, "0");
     const newClientNumber = `${date}-${number}`;
     setGlobalCounter((prev) => prev + 1);
@@ -49,7 +34,7 @@ export default function CounterQueuePage() {
     const updatedCounters = [...counterList];
     let assigned = false;
 
-    for (let counter of updatedCounters) {
+    for (const counter of updatedCounters) {
       if (!counter.occupied) {
         counter.occupied = true;
         counter.clientNumber = newClientNumber;
@@ -72,7 +57,6 @@ export default function CounterQueuePage() {
     setCounterList(updatedCounters);
   };
 
-  // Auto-assign next in queue whenever counters update
   useEffect(() => {
     const updatedCounters = [...counterList];
     const newQueue = [...waitingQueue];
@@ -91,7 +75,7 @@ export default function CounterQueuePage() {
       setCounterList(updatedCounters);
       setWaitingQueue(newQueue);
     }
-  }, [counterList]); // <- watches counter state!
+  }, [waitingQueue, counterList]);
 
   return (
     <div className="min-h-screen w-full bg-gray-50 flex flex-col px-12 py-8 space-y-8">
